@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 kevinzhow. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import "PNScatterChartDataItem.h"
 
 @interface PNScatterChartDataItem ()

@@ -6,7 +6,7 @@
 //  Copyright (c) 2013年 kevinzhow. All rights reserved.
 //
 
-#import <XCTest/XCTest.h>
+#import <../XCTest/XCTest.h>
 
 @interface PNChartDemoTests : XCTestCase
 
