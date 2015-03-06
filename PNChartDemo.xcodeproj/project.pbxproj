@@ -44,6 +44,7 @@
 		9FE15DF8190BB014004129F5 /* PNChartLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FE15DE9190BB014004129F5 /* PNChartLabel.m */; };
 		9FE15DFA190BB014004129F5 /* PNColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FE15DEE190BB014004129F5 /* PNColor.m */; };
 		A9C75FA61A9F1DA900A54638 /* PNGenericChart.m in Sources */ = {isa = PBXBuildFile; fileRef = A9C75FA51A9F1DA900A54638 /* PNGenericChart.m */; };
+
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +109,7 @@
 		9FE15DEE190BB014004129F5 /* PNColor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PNColor.m; sourceTree = "<group>"; };
 		A9C75FA41A9F1DA900A54638 /* PNGenericChart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PNGenericChart.h; sourceTree = "<group>"; };
 		A9C75FA51A9F1DA900A54638 /* PNGenericChart.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PNGenericChart.m; sourceTree = "<group>"; };
+
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
