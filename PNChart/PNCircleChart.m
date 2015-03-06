@@ -157,7 +157,7 @@ displayCountingLabel:(BOOL)displayCountingLabel
     [_circle addAnimation:pathAnimation forKey:@"strokeEndAnimation"];
     _circle.strokeEnd   = [_current floatValue] / [_total floatValue];
 
-    [_countingLabel countFrom:0 to:[_current floatValue] withDuration:1.0];
+    [_countingLabel countFrom:0 to:[_current floatValue]/([_total floatValue]/100.0) withDuration:self.duration];
 
 
     // Check if user wants to add a gradient from the start color to the bar color
@@ -206,13 +206,20 @@ displayCountingLabel:(BOOL)displayCountingLabel
 
 
 -(void)updateChartByCurrent:(NSNumber *)current{
+    
+    [self updateChartByCurrent:current
+                       byTotal:_total];
+    
+}
+
+-(void)updateChartByCurrent:(NSNumber *)current byTotal:(NSNumber *)total {
     // Add animation
     CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"strokeEnd"];
     pathAnimation.duration = self.duration;
     pathAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
     pathAnimation.fromValue = @([_current floatValue] / [_total floatValue]);
-    pathAnimation.toValue = @([current floatValue] / [_total floatValue]);
-    _circle.strokeEnd   = [current floatValue] / [_total floatValue];
+    pathAnimation.toValue = @([current floatValue] / [total floatValue]);
+    _circle.strokeEnd   = [current floatValue] / [total floatValue];
     
     if (_strokeColorGradientStart) {
         self.gradientMask.strokeEnd = _circle.strokeEnd;
@@ -221,10 +228,11 @@ displayCountingLabel:(BOOL)displayCountingLabel
     [_circle addAnimation:pathAnimation forKey:@"strokeEndAnimation"];
     
     if (_displayCountingLabel) {
-        [self.countingLabel countFrom:fmin([_current floatValue], [_total floatValue]) to:fmin([current floatValue], [_total floatValue]) withDuration:self.duration];
+        [self.countingLabel countFrom:fmin([_current floatValue], [_total floatValue]) to:fmin([current floatValue], [total floatValue]) withDuration:self.duration];
     }
     
     _current = current;
+    _total = total;
 }
 
 @end

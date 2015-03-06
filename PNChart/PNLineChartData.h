@@ -23,6 +23,7 @@ typedef PNLineChartDataItem *(^LCLineChartDataGetter)(NSUInteger item);
 @property (nonatomic) CGFloat alpha;
 @property NSUInteger itemCount;
 @property (copy) LCLineChartDataGetter getData;
+@property (strong, nonatomic) NSString *dataTitle;
 
 @property (nonatomic, assign) PNLineChartPointStyle inflexionPointStyle;
 
