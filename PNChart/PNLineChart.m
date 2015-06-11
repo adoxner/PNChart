@@ -11,6 +11,7 @@
 #import "PNChartLabel.h"
 #import "PNLineChartData.h"
 #import "PNLineChartDataItem.h"
+#import <CoreText/CoreText.h>
 
 @interface PNLineChart ()
 
@@ -20,6 +21,9 @@
 @property (nonatomic) NSMutableArray *chartPath;       // Array of line path, one for each line.
 @property (nonatomic) NSMutableArray *pointPath;       // Array of point path, one for each line
 @property (nonatomic) NSMutableArray *endPointsOfPath;      // Array of start and end points of each line path, one for each line
+
+// display grade
+@property (nonatomic) NSMutableArray *gradeStringPaths;
 
 @end
 
@@ -56,7 +60,6 @@
 {
     CGFloat yStep = (_yValueMax - _yValueMin) / _yLabelNum;
     CGFloat yStepHeight = _chartCavanHeight / _yLabelNum;
-    NSString *yLabelFormat = self.yLabelFormat ? : @"%1.f";
 
     if (_yChartLabels) {
         for (PNChartLabel * label in _yChartLabels) {
@@ -68,19 +71,19 @@
 
     if (yStep == 0.0) {
         PNChartLabel *minLabel = [[PNChartLabel alloc] initWithFrame:CGRectMake(0.0, (NSInteger)_chartCavanHeight, (NSInteger)_chartMargin, (NSInteger)_yLabelHeight)];
-        minLabel.text = [NSString stringWithFormat:yLabelFormat, 0.0];
+        minLabel.text = [self formatYLabel:0.0];
         [self setCustomStyleForYLabel:minLabel];
         [self addSubview:minLabel];
         [_yChartLabels addObject:minLabel];
 
         PNChartLabel *midLabel = [[PNChartLabel alloc] initWithFrame:CGRectMake(0.0, (NSInteger)(_chartCavanHeight / 2), (NSInteger)_chartMargin, (NSInteger)_yLabelHeight)];
-        midLabel.text = [NSString stringWithFormat:yLabelFormat, _yValueMax];
+        midLabel.text = [self formatYLabel:_yValueMax];
         [self setCustomStyleForYLabel:midLabel];
         [self addSubview:midLabel];
         [_yChartLabels addObject:midLabel];
 
         PNChartLabel *maxLabel = [[PNChartLabel alloc] initWithFrame:CGRectMake(0.0, 0.0, (NSInteger)_chartMargin, (NSInteger)_yLabelHeight)];
-        maxLabel.text = [NSString stringWithFormat:yLabelFormat, _yValueMax * 2];
+        maxLabel.text = [self formatYLabel:_yValueMax * 2];
         [self setCustomStyleForYLabel:maxLabel];
         [self addSubview:maxLabel];
         [_yChartLabels addObject:maxLabel];
@@ -93,7 +96,7 @@
         {
             PNChartLabel *label = [[PNChartLabel alloc] initWithFrame:CGRectMake(0.0, (NSInteger)(_chartCavanHeight - index * yStepHeight), (NSInteger)_chartMargin, (NSInteger)_yLabelHeight)];
             [label setTextAlignment:NSTextAlignmentRight];
-            label.text = [NSString stringWithFormat:yLabelFormat, _yValueMin + (yStep * index)];
+            label.text = [self formatYLabel:_yValueMin + (yStep * index)];
             [self setCustomStyleForYLabel:label];
             [self addSubview:label];
             [_yChartLabels addObject:label];
@@ -313,6 +316,7 @@
 {
     _chartPath = [[NSMutableArray alloc] init];
     _pointPath = [[NSMutableArray alloc] init];
+    _gradeStringPaths = [NSMutableArray array];
 
     [self calculateChartPath:_chartPath andPointsPath:_pointPath andPathKeyPoints:_pathPoints andPathStartEndPoints:_endPointsOfPath];
     // Draw each line
@@ -351,6 +355,12 @@
         }
 
         [CATransaction commit];
+        
+        NSMutableArray* textLayerArray = [self.gradeStringPaths objectAtIndex:lineIndex];
+        for (CATextLayer* textLayer in textLayerArray) {
+            CABasicAnimation* fadeAnimation = [self fadeAnimation];
+            [textLayer addAnimation:fadeAnimation forKey:nil];
+        }
 
         UIGraphicsEndImageContext();
     }
@@ -374,6 +384,10 @@
         
         [chartPath insertObject:progressline atIndex:lineIndex];
         [pointsPath insertObject:pointPath atIndex:lineIndex];
+        
+        
+        NSMutableArray* gradePathArray = [NSMutableArray array];
+        [self.gradeStringPaths addObject:gradePathArray];
         
         if (!_showLabel) {
             _chartCavanHeight = self.frame.size.height - 2 * _yLabelHeight;
@@ -412,6 +426,11 @@
                 [pointPath moveToPoint:CGPointMake(circleCenter.x + (inflexionWidth / 2), circleCenter.y)];
                 [pointPath addArcWithCenter:circleCenter radius:inflexionWidth / 2 startAngle:0 endAngle:2 * M_PI clockwise:YES];
                 
+                //jet text display text
+//                CATextLayer* textLayer = [self createTextLayer];
+//                [self setGradeFrame:textLayer grade:yValue pointCenter:circleCenter width:inflexionWidth];
+//                [gradePathArray addObject:textLayer];
+                
                 if ( i != 0 ) {
                     
                     // calculate the point for line
@@ -442,6 +461,11 @@
                 [pointPath addLineToPoint:CGPointMake(squareCenter.x + (inflexionWidth / 2), squareCenter.y + (inflexionWidth / 2))];
                 [pointPath addLineToPoint:CGPointMake(squareCenter.x - (inflexionWidth / 2), squareCenter.y + (inflexionWidth / 2))];
                 [pointPath closePath];
+                
+                // text display text
+//                CATextLayer* textLayer = [self createTextLayer];
+//                [self setGradeFrame:textLayer grade:yValue pointCenter:squareCenter width:inflexionWidth];
+//                [gradePathArray addObject:textLayer];
                 
                 if ( i != 0 ) {
                     
@@ -475,6 +499,11 @@
                 [pointPath addLineToPoint:middlePoint];
                 [pointPath addLineToPoint:endPoint];
                 [pointPath closePath];
+                
+                // text display text
+//                CATextLayer* textLayer = [self createTextLayer];
+//                [self setGradeFrame:textLayer grade:yValue pointCenter:middlePoint width:inflexionWidth];
+//                [gradePathArray addObject:textLayer];
                 
                 if ( i != 0 ) {
                     // calculate the point for triangle
@@ -589,8 +618,8 @@
         yMin = 0.0f;
     }
     
-    _yValueMin = _yFixedValueMin ? _yFixedValueMin : yMin ;
-    _yValueMax = _yFixedValueMax ? _yFixedValueMax : yMax + yMax / 10.0;
+    _yValueMin = (_yFixedValueMin > -FLT_MAX) ? _yFixedValueMin : yMin ;
+    _yValueMax = (_yFixedValueMax > -FLT_MAX) ? _yFixedValueMax : yMax + yMax / 10.0;
     
     if (_showGenYLabels) {
         [self setYLabels];
@@ -732,6 +761,8 @@
     _endPointsOfPath     = [[NSMutableArray alloc] init];
     self.userInteractionEnabled = YES;
 
+    _yFixedValueMin = -FLT_MAX;
+    _yFixedValueMax = -FLT_MAX;
     _yLabelNum = 5.0;
     _yLabelHeight = [[[[PNChartLabel alloc] init] font] pointSize];
 
@@ -790,6 +821,25 @@
     }
 }
 
+- (NSString*) formatYLabel:(double)value{
+
+    if (self.yLabelBlockFormatter)
+    {
+        return self.yLabelBlockFormatter(value);
+    }
+    else
+    {
+        if (!self.thousandsSeparator) {
+            NSString *format = self.yLabelFormat ? : @"%1.f";
+            return [NSString stringWithFormat:format,value];
+        }
+        
+        NSNumberFormatter* numberFormatter = [[NSNumberFormatter alloc] init];
+        [numberFormatter setFormatterBehavior: NSNumberFormatterBehavior10_4];
+        [numberFormatter setNumberStyle: NSNumberFormatterDecimalStyle];
+        return [numberFormatter stringFromNumber: [NSNumber numberWithDouble:value]];
+    }
+}
 
 - (UIView*) getLegendWithMaxWidth:(CGFloat)mWidth{
     if ([self.chartData count] < 1) {
@@ -805,13 +855,17 @@
     
     /* accumulated height */
     CGFloat totalHeight = 0;
+    CGFloat totalWidth = 0;
     
     NSMutableArray *legendViews = [[NSMutableArray alloc] init];
-    
-    NSUInteger numLabelsPerRow = ceil((float)[self.chartData count] / self.labelRowsInSerialMode);
 
     /* Determine the max width of each legend item */
-    CGFloat maxLabelWidth = self.legendStyle == PNLegendItemStyleStacked ? (mWidth - legendLineWidth) : (mWidth / numLabelsPerRow - legendLineWidth);
+    CGFloat maxLabelWidth;
+    if (self.legendStyle == PNLegendItemStyleStacked) {
+        maxLabelWidth = mWidth - legendLineWidth;
+    }else{
+        maxLabelWidth = MAXFLOAT;
+    }
     
     /* this is used when labels wrap text and the line 
      * should be in the middle of the first row */
@@ -820,6 +874,7 @@
                                                    font:self.legendFont ? self.legendFont : [UIFont systemFontOfSize:12.0f]].height;
 
     NSUInteger counter = 0;
+    NSUInteger rowWidth = 0;
     NSUInteger rowMaxHeight = 0;
     
     for (PNLineChartData *pdata in self.chartData) {
@@ -829,12 +884,14 @@
                                                 font:self.legendFont ? self.legendFont : [UIFont systemFontOfSize:12.0f]];
         
         /* draw lines */
-        
-        if (counter != 0 && counter % numLabelsPerRow == 0) {
+        if ((rowWidth + labelsize.width + legendLineWidth > mWidth)&&(self.legendStyle == PNLegendItemStyleSerial)) {
+            rowWidth = 0;
             x = 0;
             y += rowMaxHeight;
             rowMaxHeight = 0;
         }
+        rowWidth += labelsize.width + legendLineWidth;
+        totalWidth = self.legendStyle == PNLegendItemStyleSerial ? fmaxf(rowWidth, totalWidth) : fmaxf(totalWidth, labelsize.width + legendLineWidth);
         
         /* If there is inflection decorator, the line is composed of two lines 
          * and this is the space that separates two lines in order to put inflection
@@ -871,19 +928,20 @@
                                               andColor:pdata.color
                                               andAlpha:pdata.alpha]];
 
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(x + legendLineWidth, y, maxLabelWidth, labelsize.height)];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(x + legendLineWidth, y, labelsize.width, labelsize.height)];
         label.text = pdata.dataTitle;
         label.textColor = self.legendFontColor ? self.legendFontColor : [UIColor blackColor];
         label.font = self.legendFont ? self.legendFont : [UIFont systemFontOfSize:12.0f];
         label.lineBreakMode = NSLineBreakByWordWrapping;
         label.numberOfLines = 0;
-        
+
         rowMaxHeight = fmaxf(rowMaxHeight, labelsize.height);
         x += self.legendStyle == PNLegendItemStyleStacked ? 0 : labelsize.width + legendLineWidth;
         y += self.legendStyle == PNLegendItemStyleStacked ? labelsize.height : 0;
         
-
-        totalHeight = self.legendStyle == PNLegendItemStyleStacked ? fmaxf(totalHeight, rowMaxHeight + y) : totalHeight + labelsize.height;
+        
+        totalHeight = self.legendStyle == PNLegendItemStyleSerial ? fmaxf(totalHeight, rowMaxHeight + y) : totalHeight + labelsize.height;
+        
         [legendViews addObject:label];
         counter++;
     }
@@ -939,6 +997,50 @@
     UIImageView *squareImageView = [[UIImageView alloc]initWithImage:squareImage];
     [squareImageView setFrame:CGRectMake(originX, originY, size + sw, size + sw)];
     return squareImageView;
+}
+
+#pragma mark setter and getter
+
+-(CATextLayer*)createTextLayer
+{
+    CATextLayer * textLayer = [[CATextLayer alloc]init];
+    [textLayer setString:@"0"];
+    [textLayer setAlignmentMode:kCAAlignmentCenter];
+    [textLayer setForegroundColor:[[UIColor blackColor] CGColor]];
+    return textLayer;
+}
+
+-(void)setGradeFrame:(CATextLayer*)textLayer grade:(CGFloat)grade pointCenter:(CGPoint)pointCenter width:(CGFloat)width
+{
+    CGFloat textheigt = width*3;
+    CGFloat textWidth = width*8;
+    CGFloat textStartPosY;
+    
+    if (pointCenter.y > textheigt) {
+        textStartPosY = pointCenter.y - textheigt;
+    }
+    else {
+        textStartPosY = pointCenter.y;
+    }
+    
+    [self.layer addSublayer:textLayer];
+    [textLayer setFontSize:textheigt/2];
+    
+    [textLayer setString:[[NSString alloc]initWithFormat:@"%ld",(NSInteger)(grade*100)]];
+    [textLayer setFrame:CGRectMake(0, 0, textWidth,  textheigt)];
+    [textLayer setPosition:CGPointMake(pointCenter.x, textStartPosY)];
+    textLayer.contentsScale = [UIScreen mainScreen].scale;
+
+}
+
+-(CABasicAnimation*)fadeAnimation
+{
+    CABasicAnimation* fadeAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    fadeAnimation.fromValue = [NSNumber numberWithFloat:0.0];
+    fadeAnimation.toValue = [NSNumber numberWithFloat:1.0];
+    fadeAnimation.duration = 2.0;
+    
+    return fadeAnimation;
 }
 
 @end
