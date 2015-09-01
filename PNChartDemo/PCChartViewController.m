@@ -91,23 +91,39 @@
     }
     else if ([self.title isEqualToString:@"Bar Chart"])
     {
+        static NSNumberFormatter *barChartFormatter;
+        if (!barChartFormatter){
+            barChartFormatter = [[NSNumberFormatter alloc] init];
+            barChartFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
+            barChartFormatter.allowsFloats = NO;
+            barChartFormatter.maximumFractionDigits = 0;
+        }
         self.titleLabel.text = @"Bar Chart";
         
         self.barChart = [[PNBarChart alloc] initWithFrame:CGRectMake(0, 135.0, SCREEN_WIDTH, 200.0)];
+//        self.barChart.showLabel = NO;
         self.barChart.backgroundColor = [UIColor clearColor];
         self.barChart.yLabelFormatter = ^(CGFloat yValue){
-            CGFloat yValueParsed = yValue;
-            NSString * labelText = [NSString stringWithFormat:@"%0.f",yValueParsed];
-            return labelText;
+            return [barChartFormatter stringFromNumber:[NSNumber numberWithFloat:yValue]];
         };
+        
+        self.barChart.yChartLabelWidth = 20.0;
+        self.barChart.chartMarginLeft = 30.0;
+        self.barChart.chartMarginRight = 10.0;
+        self.barChart.chartMarginTop = 5.0;
+        self.barChart.chartMarginBottom = 10.0;
+
+        
         self.barChart.labelMarginTop = 5.0;
         self.barChart.showChartBorder = YES;
         [self.barChart setXLabels:@[@"2",@"3",@"4",@"5",@"2",@"3",@"4",@"5"]];
 //       self.barChart.yLabels = @[@-10,@0,@10];
+//        [self.barChart setYValues:@[@10000.0,@30000.0,@10000.0,@100000.0,@500000.0,@1000000.0,@1150000.0,@2150000.0]];
         [self.barChart setYValues:@[@10.82,@1.88,@6.96,@33.93,@10.82,@1.88,@6.96,@33.93]];
         [self.barChart setStrokeColors:@[PNGreen,PNGreen,PNRed,PNGreen,PNGreen,PNGreen,PNRed,PNGreen]];
         self.barChart.isGradientShow = NO;
         self.barChart.isShowNumbers = NO;
+
         [self.barChart strokeChart];
         
         self.barChart.delegate = self;
@@ -204,6 +220,29 @@
         self.changeValueButton.hidden = YES;
         [self.view addSubview:self.scatterChart];
     }
+    else if ([self.title isEqualToString:@"Radar Chart"])
+    {
+        self.titleLabel.text = @"Radar Chart";
+        
+        self.leftSwitch.hidden = NO;
+        self.rightSwitch.hidden = NO;
+        self.leftLabel.hidden = NO;
+        self.rightLabel.hidden = NO;
+        self.leftLabel.text = @"Labels Style";
+        self.rightLabel.text = @"Graduation";
+        
+        NSArray *items = @[[PNRadarChartDataItem dataItemWithValue:3 description:@"Art"],
+                           [PNRadarChartDataItem dataItemWithValue:2 description:@"Math"],
+                           [PNRadarChartDataItem dataItemWithValue:8 description:@"Sports"],
+                           [PNRadarChartDataItem dataItemWithValue:5 description:@"Literature"],
+                           [PNRadarChartDataItem dataItemWithValue:4 description:@"Other"],
+                           ];
+        self.radarChart = [[PNRadarChart alloc] initWithFrame:CGRectMake(0, 135.0, SCREEN_WIDTH, 300.0) items:items valueDivider:1];
+        [self.radarChart strokeChart];
+        
+        [self.view addSubview:self.radarChart];
+    }
+
 }
 
 
@@ -308,6 +347,24 @@
         }
         [self.pieChart strokeChart];
     }
+    if ([self.title isEqualToString:@"Radar Chart"]){
+        UISwitch *showLabels = (UISwitch*) sender;
+        if (showLabels.on) {
+            self.radarChart.isShowGraduation = NO;
+        }else{
+            self.radarChart.isShowGraduation = YES;
+        }
+        [self.radarChart strokeChart];
+    }
+}
+
+- (IBAction)centerSwitchChanged:(id)sender
+{
+    if (self.pieChart)
+    {
+        [self.pieChart setEnableMultipleSelection:self.centerSwitch.on];
+        [self.pieChart strokeChart];
+    }
 }
 
 - (IBAction)leftSwitchChanged:(id)sender {
@@ -319,6 +376,15 @@
             self.pieChart.showAbsoluteValues = YES;
         }
         [self.pieChart strokeChart];
+    }
+    if ([self.title isEqualToString:@"Radar Chart"]){
+        UISwitch *showRelative = (UISwitch*) sender;
+        if (showRelative.on) {
+            self.radarChart.labelStyle = PNRadarChartLabelStyleHorizontal;
+        }else{
+            self.radarChart.labelStyle = PNRadarChartLabelStyleCircle;
+        }
+        [self.radarChart strokeChart];
     }
 }
 @end
