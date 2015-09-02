@@ -47,15 +47,9 @@
     self = [self initWithFrame:frame];
     if(self){
         _items = [NSArray arrayWithArray:items];
-<<<<<<< HEAD
         _outerCircleRadius  = CGRectGetWidth(self.bounds) / 2.0;
         _innerCircleRadius  = CGRectGetWidth(self.bounds) / 2.3;
-        
-=======
         _selectedItems = [NSMutableDictionary dictionary];
-        _outerCircleRadius  = CGRectGetWidth(self.bounds) / 2;
-        _innerCircleRadius  = CGRectGetWidth(self.bounds) / 6;
->>>>>>> kevinzhow/master
         _descriptionTextColor = [UIColor whiteColor];
         _descriptionTextFont  = [UIFont fontWithName:@"Avenir-Medium" size:18.0];
         _descriptionTextShadowColor  = [[UIColor blackColor] colorWithAlphaComponent:0.4];

@@ -127,12 +127,8 @@
     label.text = [NSString stringWithFormat:@"%@%@%@", _yLabelPrefix, labelText, _yLabelSuffix];
       
     [self addSubview:label];
-<<<<<<< HEAD
-    
-=======
-      
+
     label.frame = (CGRect){0, sectionHeight * i + _chartMarginTop - kYLabelHeight/2.0, _yChartLabelWidth, kYLabelHeight};
->>>>>>> kevinzhow/master
 
     [_yChartLabels addObject:label];
   }
